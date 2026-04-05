@@ -1,8 +1,8 @@
-use std::sync::Mutex;
-use tauri::Manager;
+use crate::state::AppState;
 use agentforge_core::database::connection::open_database;
 use agentforge_core::services::security::SecurityService;
-use crate::state::AppState;
+use std::sync::Mutex;
+use tauri::Manager;
 
 pub fn initialize(app: &tauri::App) -> Result<AppState, Box<dyn std::error::Error>> {
     let app_data_dir = app

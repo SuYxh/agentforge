@@ -86,11 +86,7 @@ impl FolderDB {
         Ok(folders)
     }
 
-    pub fn update(
-        conn: &Connection,
-        id: &str,
-        dto: UpdateFolderDTO,
-    ) -> Result<Folder, AppError> {
+    pub fn update(conn: &Connection, id: &str, dto: UpdateFolderDTO) -> Result<Folder, AppError> {
         let now = Utc::now().timestamp_millis();
         let mut set_clauses = vec!["updated_at = ?1".to_string()];
         let mut param_index: usize = 2;
@@ -170,8 +166,7 @@ impl FolderDB {
     pub fn reorder(conn: &Connection, updates: Vec<FolderOrderUpdate>) -> Result<(), AppError> {
         let tx = conn.unchecked_transaction()?;
         {
-            let mut stmt =
-                tx.prepare("UPDATE folders SET sort_order = ?1 WHERE id = ?2")?;
+            let mut stmt = tx.prepare("UPDATE folders SET sort_order = ?1 WHERE id = ?2")?;
             for update in &updates {
                 stmt.execute(params![update.order, update.id])?;
             }

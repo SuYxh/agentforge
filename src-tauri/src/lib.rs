@@ -6,9 +6,9 @@ mod state;
 #[macro_use]
 extern crate objc;
 
-use tauri::Manager;
 use tauri::menu::{MenuBuilder, MenuItemBuilder};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder};
+use tauri::Manager;
 
 #[cfg(target_os = "macos")]
 fn apply_macos_rounded_corners(app: &tauri::App) {
@@ -19,10 +19,11 @@ fn apply_macos_rounded_corners(app: &tauri::App) {
         let ns_window = window.ns_window().unwrap() as id;
         unsafe {
             ns_window.setTitlebarAppearsTransparent_(YES);
-            ns_window.setTitleVisibility_(cocoa::appkit::NSWindowTitleVisibility::NSWindowTitleHidden);
+            ns_window
+                .setTitleVisibility_(cocoa::appkit::NSWindowTitleVisibility::NSWindowTitleHidden);
 
-            let style_mask = ns_window.styleMask()
-                | NSWindowStyleMask::NSFullSizeContentViewWindowMask;
+            let style_mask =
+                ns_window.styleMask() | NSWindowStyleMask::NSFullSizeContentViewWindowMask;
             ns_window.setStyleMask_(style_mask);
 
             ns_window.setHasShadow_(YES);
@@ -66,8 +67,11 @@ pub fn run() {
 
             TrayIconBuilder::new()
                 .menu(&menu)
-                .on_menu_event(|app: &tauri::AppHandle, event: tauri::menu::MenuEvent| {
-                    match event.id().as_ref() {
+                .on_menu_event(
+                    |app: &tauri::AppHandle, event: tauri::menu::MenuEvent| match event
+                        .id()
+                        .as_ref()
+                    {
                         "show" => {
                             if let Some(w) = app.get_webview_window("main") {
                                 if w.is_visible().unwrap_or(false) {
@@ -82,21 +86,23 @@ pub fn run() {
                             app.exit(0);
                         }
                         _ => {}
-                    }
-                })
-                .on_tray_icon_event(|tray: &tauri::tray::TrayIcon, event: tauri::tray::TrayIconEvent| {
-                    if let tauri::tray::TrayIconEvent::Click {
-                        button: MouseButton::Left,
-                        button_state: MouseButtonState::Up,
-                        ..
-                    } = event
-                    {
-                        if let Some(w) = tray.app_handle().get_webview_window("main") {
-                            let _ = w.show();
-                            let _ = w.set_focus();
+                    },
+                )
+                .on_tray_icon_event(
+                    |tray: &tauri::tray::TrayIcon, event: tauri::tray::TrayIconEvent| {
+                        if let tauri::tray::TrayIconEvent::Click {
+                            button: MouseButton::Left,
+                            button_state: MouseButtonState::Up,
+                            ..
+                        } = event
+                        {
+                            if let Some(w) = tray.app_handle().get_webview_window("main") {
+                                let _ = w.show();
+                                let _ = w.set_focus();
+                            }
                         }
-                    }
-                })
+                    },
+                )
                 .build(app)?;
 
             Ok(())

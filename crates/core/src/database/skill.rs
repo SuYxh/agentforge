@@ -38,7 +38,9 @@ fn row_to_skill(row: &Row) -> Result<Skill, rusqlite::Error> {
         content: content.clone(),
         instructions: content,
         mcp_config: row.get("mcp_config")?,
-        protocol_type: row.get::<_, Option<String>>("protocol_type")?.unwrap_or_else(|| "mcp".to_string()),
+        protocol_type: row
+            .get::<_, Option<String>>("protocol_type")?
+            .unwrap_or_else(|| "mcp".to_string()),
         version: row.get("version")?,
         author: row.get("author")?,
         source_url: row.get("source_url")?,
@@ -118,22 +120,26 @@ impl SkillDB {
                 };
                 return Self::update(conn, &existing.id, update_dto);
             }
-            return Err(AppError::Validation(format!("Skill already exists: {}", normalized_name)));
+            return Err(AppError::Validation(format!(
+                "Skill already exists: {}",
+                normalized_name
+            )));
         }
 
         let id = Uuid::new_v4().to_string();
         let now = Utc::now().timestamp_millis();
 
-        let effective_content = dto.content
-            .or(dto.instructions)
-            .unwrap_or_default();
+        let effective_content = dto.content.or(dto.instructions).unwrap_or_default();
         let tags_json = serde_json::to_string(&dto.tags.unwrap_or_default())?;
-        let original_tags_json = dto.original_tags
+        let original_tags_json = dto
+            .original_tags
             .map(|t| serde_json::to_string(&t).unwrap_or_else(|_| tags_json.clone()))
             .unwrap_or_else(|| tags_json.clone());
-        let prerequisites_json: Option<String> = dto.prerequisites
+        let prerequisites_json: Option<String> = dto
+            .prerequisites
             .map(|p| serde_json::to_string(&p).unwrap_or_else(|_| "[]".to_string()));
-        let compatibility_json: Option<String> = dto.compatibility
+        let compatibility_json: Option<String> = dto
+            .compatibility
             .map(|c| serde_json::to_string(&c).unwrap_or_else(|_| "[]".to_string()));
 
         conn.execute(
@@ -165,20 +171,32 @@ impl SkillDB {
                 dto.author.unwrap_or_else(|| "User".to_string()),
                 tags_json,
                 original_tags_json,
-                if dto.is_favorite == Some(true) { 1i64 } else { 0i64 },
+                if dto.is_favorite == Some(true) {
+                    1i64
+                } else {
+                    0i64
+                },
                 dto.source_url,
                 dto.local_repo_path,
                 dto.icon_url,
                 dto.icon_emoji,
                 dto.icon_background,
                 dto.category.unwrap_or_else(|| "general".to_string()),
-                if dto.is_builtin == Some(true) { 1i64 } else { 0i64 },
+                if dto.is_builtin == Some(true) {
+                    1i64
+                } else {
+                    0i64
+                },
                 dto.registry_slug,
                 dto.content_url,
                 prerequisites_json,
                 compatibility_json,
                 dto.current_version.unwrap_or(0),
-                if dto.version_tracking_enabled.unwrap_or(true) { 1i64 } else { 0i64 },
+                if dto.version_tracking_enabled.unwrap_or(true) {
+                    1i64
+                } else {
+                    0i64
+                },
                 now,
                 now,
             ],
@@ -252,11 +270,16 @@ impl SkillDB {
         if let Some(ref name) = dto.name {
             let trimmed = name.trim().to_string();
             if trimmed.is_empty() {
-                return Err(AppError::Validation("Skill name cannot be empty".to_string()));
+                return Err(AppError::Validation(
+                    "Skill name cannot be empty".to_string(),
+                ));
             }
             if let Some(dup) = Self::get_by_name(conn, &trimmed)? {
                 if dup.id != id {
-                    return Err(AppError::Validation(format!("Skill already exists: {}", trimmed)));
+                    return Err(AppError::Validation(format!(
+                        "Skill already exists: {}",
+                        trimmed
+                    )));
                 }
             }
             set_clauses.push(format!("name = ?{}", param_index));
@@ -388,10 +411,12 @@ impl SkillDB {
         Ok(skills)
     }
 
-    pub fn version_get_all(conn: &Connection, skill_id: &str) -> Result<Vec<SkillVersion>, AppError> {
-        let mut stmt = conn.prepare(
-            "SELECT * FROM skill_versions WHERE skill_id = ?1 ORDER BY version DESC"
-        )?;
+    pub fn version_get_all(
+        conn: &Connection,
+        skill_id: &str,
+    ) -> Result<Vec<SkillVersion>, AppError> {
+        let mut stmt =
+            conn.prepare("SELECT * FROM skill_versions WHERE skill_id = ?1 ORDER BY version DESC")?;
         let rows = stmt.query_map(params![skill_id], row_to_skill_version)?;
         let mut versions = Vec::new();
         for row in rows {
@@ -447,14 +472,20 @@ impl SkillDB {
         })
     }
 
-    pub fn version_rollback(conn: &Connection, skill_id: &str, version: i64) -> Result<Skill, AppError> {
-        let mut stmt = conn.prepare(
-            "SELECT * FROM skill_versions WHERE skill_id = ?1 AND version = ?2"
-        )?;
+    pub fn version_rollback(
+        conn: &Connection,
+        skill_id: &str,
+        version: i64,
+    ) -> Result<Skill, AppError> {
+        let mut stmt =
+            conn.prepare("SELECT * FROM skill_versions WHERE skill_id = ?1 AND version = ?2")?;
         let ver = stmt
             .query_row(params![skill_id, version], row_to_skill_version)
             .map_err(|_| {
-                AppError::NotFound(format!("Version {} not found for skill {}", version, skill_id))
+                AppError::NotFound(format!(
+                    "Version {} not found for skill {}",
+                    version, skill_id
+                ))
             })?;
 
         let now = Utc::now().timestamp_millis();

@@ -26,10 +26,7 @@ pub async fn webdav_upload(
 }
 
 #[tauri::command]
-pub async fn webdav_stat(
-    file_url: String,
-    config: WebDavConfig,
-) -> Result<WebDavResponse, String> {
+pub async fn webdav_stat(file_url: String, config: WebDavConfig) -> Result<WebDavResponse, String> {
     let client = WebDavClient::new();
     Ok(client.stat(&file_url, &config).await)
 }

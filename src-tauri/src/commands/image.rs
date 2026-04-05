@@ -1,9 +1,9 @@
-use std::path::{Path, PathBuf};
-use std::fs;
-use tauri::State;
 use crate::state::AppState;
-use uuid::Uuid;
 use base64::{engine::general_purpose::STANDARD, Engine};
+use std::fs;
+use std::path::{Path, PathBuf};
+use tauri::State;
+use uuid::Uuid;
 
 fn images_dir(state: &AppState) -> PathBuf {
     PathBuf::from(&state.data_dir).join("images")
@@ -21,9 +21,7 @@ fn ensure_dir(dir: &Path) -> Result<(), String> {
 }
 
 fn validate_filename(file_name: &str, base_dir: &Path) -> Result<PathBuf, String> {
-    let safe_name = Path::new(file_name)
-        .file_name()
-        .ok_or("Invalid filename")?;
+    let safe_name = Path::new(file_name).file_name().ok_or("Invalid filename")?;
     if safe_name.to_str() != Some(file_name) || file_name.contains("..") {
         return Err("Invalid filename: path traversal detected".into());
     }
@@ -86,17 +84,17 @@ fn is_valid_external_url(url: &str) -> bool {
 }
 
 #[tauri::command]
-pub async fn image_save(state: State<'_, AppState>, file_paths: Vec<String>) -> Result<Vec<String>, String> {
+pub async fn image_save(
+    state: State<'_, AppState>,
+    file_paths: Vec<String>,
+) -> Result<Vec<String>, String> {
     let dir = images_dir(&state);
     ensure_dir(&dir)?;
 
     let mut saved = Vec::new();
     for file_path in &file_paths {
         let src = Path::new(file_path);
-        let ext = src
-            .extension()
-            .and_then(|e| e.to_str())
-            .unwrap_or("png");
+        let ext = src.extension().and_then(|e| e.to_str()).unwrap_or("png");
         let file_name = format!("{}.{}", Uuid::new_v4(), ext);
         let dest = dir.join(&file_name);
         if fs::copy(src, &dest).is_ok() {
@@ -107,7 +105,10 @@ pub async fn image_save(state: State<'_, AppState>, file_paths: Vec<String>) -> 
 }
 
 #[tauri::command]
-pub async fn image_save_buffer(state: State<'_, AppState>, buffer: Vec<u8>) -> Result<Option<String>, String> {
+pub async fn image_save_buffer(
+    state: State<'_, AppState>,
+    buffer: Vec<u8>,
+) -> Result<Option<String>, String> {
     let dir = images_dir(&state);
     ensure_dir(&dir)?;
 
@@ -118,7 +119,10 @@ pub async fn image_save_buffer(state: State<'_, AppState>, buffer: Vec<u8>) -> R
 }
 
 #[tauri::command]
-pub async fn image_download(state: State<'_, AppState>, url: String) -> Result<Option<String>, String> {
+pub async fn image_download(
+    state: State<'_, AppState>,
+    url: String,
+) -> Result<Option<String>, String> {
     if !is_valid_external_url(&url) {
         return Err("Invalid or blocked URL".into());
     }
@@ -173,7 +177,10 @@ pub async fn image_list(state: State<'_, AppState>) -> Result<Vec<String>, Strin
 }
 
 #[tauri::command]
-pub async fn image_get_size(state: State<'_, AppState>, file_name: String) -> Result<Option<u64>, String> {
+pub async fn image_get_size(
+    state: State<'_, AppState>,
+    file_name: String,
+) -> Result<Option<u64>, String> {
     let dir = images_dir(&state);
     let path = validate_filename(&file_name, &dir)?;
     if !path.exists() {
@@ -184,7 +191,10 @@ pub async fn image_get_size(state: State<'_, AppState>, file_name: String) -> Re
 }
 
 #[tauri::command]
-pub async fn image_read_base64(state: State<'_, AppState>, file_name: String) -> Result<Option<String>, String> {
+pub async fn image_read_base64(
+    state: State<'_, AppState>,
+    file_name: String,
+) -> Result<Option<String>, String> {
     let dir = images_dir(&state);
     let path = validate_filename(&file_name, &dir)?;
     if !path.exists() {
@@ -195,7 +205,11 @@ pub async fn image_read_base64(state: State<'_, AppState>, file_name: String) ->
 }
 
 #[tauri::command]
-pub async fn image_save_base64(state: State<'_, AppState>, file_name: String, base64_data: String) -> Result<bool, String> {
+pub async fn image_save_base64(
+    state: State<'_, AppState>,
+    file_name: String,
+    base64_data: String,
+) -> Result<bool, String> {
     let dir = images_dir(&state);
     ensure_dir(&dir)?;
     let path = validate_filename(&file_name, &dir)?;
@@ -230,24 +244,27 @@ pub async fn image_clear(state: State<'_, AppState>) -> Result<bool, String> {
 }
 
 #[tauri::command]
-pub async fn image_get_path(state: State<'_, AppState>, file_name: String) -> Result<String, String> {
+pub async fn image_get_path(
+    state: State<'_, AppState>,
+    file_name: String,
+) -> Result<String, String> {
     let dir = images_dir(&state);
     let path = validate_filename(&file_name, &dir)?;
     Ok(path.to_string_lossy().to_string())
 }
 
 #[tauri::command]
-pub async fn video_save(state: State<'_, AppState>, file_paths: Vec<String>) -> Result<Vec<String>, String> {
+pub async fn video_save(
+    state: State<'_, AppState>,
+    file_paths: Vec<String>,
+) -> Result<Vec<String>, String> {
     let dir = videos_dir(&state);
     ensure_dir(&dir)?;
 
     let mut saved = Vec::new();
     for file_path in &file_paths {
         let src = Path::new(file_path);
-        let ext = src
-            .extension()
-            .and_then(|e| e.to_str())
-            .unwrap_or("mp4");
+        let ext = src.extension().and_then(|e| e.to_str()).unwrap_or("mp4");
         let file_name = format!("{}.{}", Uuid::new_v4(), ext);
         let dest = dir.join(&file_name);
         if fs::copy(src, &dest).is_ok() {
@@ -283,7 +300,10 @@ pub async fn video_list(state: State<'_, AppState>) -> Result<Vec<String>, Strin
 }
 
 #[tauri::command]
-pub async fn video_get_size(state: State<'_, AppState>, file_name: String) -> Result<Option<u64>, String> {
+pub async fn video_get_size(
+    state: State<'_, AppState>,
+    file_name: String,
+) -> Result<Option<u64>, String> {
     let dir = videos_dir(&state);
     let path = validate_filename(&file_name, &dir)?;
     if !path.exists() {
@@ -294,7 +314,10 @@ pub async fn video_get_size(state: State<'_, AppState>, file_name: String) -> Re
 }
 
 #[tauri::command]
-pub async fn video_read_base64(state: State<'_, AppState>, file_name: String) -> Result<Option<String>, String> {
+pub async fn video_read_base64(
+    state: State<'_, AppState>,
+    file_name: String,
+) -> Result<Option<String>, String> {
     let dir = videos_dir(&state);
     let path = validate_filename(&file_name, &dir)?;
     if !path.exists() {
@@ -305,7 +328,11 @@ pub async fn video_read_base64(state: State<'_, AppState>, file_name: String) ->
 }
 
 #[tauri::command]
-pub async fn video_save_base64(state: State<'_, AppState>, file_name: String, base64_data: String) -> Result<bool, String> {
+pub async fn video_save_base64(
+    state: State<'_, AppState>,
+    file_name: String,
+    base64_data: String,
+) -> Result<bool, String> {
     let dir = videos_dir(&state);
     ensure_dir(&dir)?;
     let path = validate_filename(&file_name, &dir)?;
@@ -340,7 +367,10 @@ pub async fn video_clear(state: State<'_, AppState>) -> Result<bool, String> {
 }
 
 #[tauri::command]
-pub async fn video_get_path(state: State<'_, AppState>, file_name: String) -> Result<String, String> {
+pub async fn video_get_path(
+    state: State<'_, AppState>,
+    file_name: String,
+) -> Result<String, String> {
     let dir = videos_dir(&state);
     let path = validate_filename(&file_name, &dir)?;
     Ok(path.to_string_lossy().to_string())

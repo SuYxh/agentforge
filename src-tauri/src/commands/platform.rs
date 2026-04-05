@@ -1,8 +1,8 @@
-use tauri::State;
 use crate::state::AppState;
-use agentforge_core::services::platforms;
 use agentforge_core::database::skill::SkillDB;
+use agentforge_core::services::platforms;
 use serde::{Deserialize, Serialize};
+use tauri::State;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PlatformInfo {
@@ -59,7 +59,10 @@ pub async fn platform_install_skill(
     platform_id: String,
     install_mode: String,
 ) -> Result<(), String> {
-    let db = state.db.lock().map_err(|e: std::sync::PoisonError<_>| e.to_string())?;
+    let db = state
+        .db
+        .lock()
+        .map_err(|e: std::sync::PoisonError<_>| e.to_string())?;
     let skill = SkillDB::get_by_id(&db, &skill_id)
         .map_err(|e| e.to_string())?
         .ok_or_else(|| format!("Skill not found: {}", skill_id))?;
@@ -92,8 +95,7 @@ pub async fn platform_install_skill(
         }
 
         #[cfg(unix)]
-        std::os::unix::fs::symlink(&source_md, &skill_md_path)
-            .map_err(|e| e.to_string())?;
+        std::os::unix::fs::symlink(&source_md, &skill_md_path).map_err(|e| e.to_string())?;
 
         #[cfg(windows)]
         std::os::windows::fs::symlink_file(&source_md, &skill_md_path)
@@ -229,7 +231,13 @@ fn build_skill_md(skill: &agentforge_core::models::skill::Skill) -> String {
     }
     if let Some(tags) = &skill.tags {
         if !tags.is_empty() {
-            md.push_str(&format!("tags: [{}]\n", tags.iter().map(|t| format!("\"{}\"", t)).collect::<Vec<_>>().join(", ")));
+            md.push_str(&format!(
+                "tags: [{}]\n",
+                tags.iter()
+                    .map(|t| format!("\"{}\"", t))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ));
         }
     }
     md.push_str("---\n\n");

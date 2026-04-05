@@ -1,8 +1,5 @@
 use std::process;
 
-use clap::{Parser, Subcommand};
-use colored::Colorize;
-use comfy_table::{ContentArrangement, Table};
 use agentforge_core::database::connection::open_database;
 use agentforge_core::database::folder::FolderDB;
 use agentforge_core::database::prompt::PromptDB;
@@ -10,6 +7,9 @@ use agentforge_core::database::settings::SettingsDB;
 use agentforge_core::database::skill::SkillDB;
 use agentforge_core::models::folder::CreateFolderDTO;
 use agentforge_core::models::prompt::{CreatePromptDTO, SearchQuery, UpdatePromptDTO};
+use clap::{Parser, Subcommand};
+use colored::Colorize;
+use comfy_table::{ContentArrangement, Table};
 use rusqlite::Connection;
 
 #[derive(Parser)]
@@ -152,14 +152,15 @@ fn short_id(id: &str) -> &str {
 }
 
 fn open_db(cli: &Cli) -> Connection {
-    let data_dir = cli
-        .data_dir
-        .clone()
-        .unwrap_or_else(default_data_dir);
+    let data_dir = cli.data_dir.clone().unwrap_or_else(default_data_dir);
     let dir_path = std::path::Path::new(&data_dir);
     if !dir_path.exists() {
         if let Err(e) = std::fs::create_dir_all(dir_path) {
-            eprintln!("{} Failed to create data directory: {}", "Error:".red().bold(), e);
+            eprintln!(
+                "{} Failed to create data directory: {}",
+                "Error:".red().bold(),
+                e
+            );
             process::exit(1);
         }
     }
@@ -213,8 +214,15 @@ fn handle_prompt(conn: &Connection, action: PromptAction, is_json: bool) -> Resu
                         short_id(&p.id).to_string(),
                         truncate(&p.title, 40),
                         p.tags.join(", "),
-                        p.folder_id.clone().map(|f| truncate(&f, 8)).unwrap_or_default(),
-                        if p.is_favorite { "★".to_string() } else { "".to_string() },
+                        p.folder_id
+                            .clone()
+                            .map(|f| truncate(&f, 8))
+                            .unwrap_or_default(),
+                        if p.is_favorite {
+                            "★".to_string()
+                        } else {
+                            "".to_string()
+                        },
                         truncate(&p.created_at, 19),
                     ]);
                 }
@@ -386,8 +394,15 @@ fn handle_prompt(conn: &Connection, action: PromptAction, is_json: bool) -> Resu
                         short_id(&p.id).to_string(),
                         truncate(&p.title, 40),
                         p.tags.join(", "),
-                        p.folder_id.clone().map(|f| truncate(&f, 8)).unwrap_or_default(),
-                        if p.is_favorite { "★".to_string() } else { "".to_string() },
+                        p.folder_id
+                            .clone()
+                            .map(|f| truncate(&f, 8))
+                            .unwrap_or_default(),
+                        if p.is_favorite {
+                            "★".to_string()
+                        } else {
+                            "".to_string()
+                        },
                         truncate(&p.created_at, 19),
                     ]);
                 }

@@ -127,11 +127,15 @@ pub fn parse_skill_md(content: &str) -> Option<ParsedSkillMd> {
 
     let frontmatter = SkillFrontmatter {
         name,
-        description: fields.get("description").map(|v| parse_frontmatter_value(v)),
+        description: fields
+            .get("description")
+            .map(|v| parse_frontmatter_value(v)),
         version: fields.get("version").map(|v| parse_frontmatter_value(v)),
         author: fields.get("author").map(|v| parse_frontmatter_value(v)),
         license: fields.get("license").map(|v| parse_frontmatter_value(v)),
-        compatibility: fields.get("compatibility").map(|v| parse_frontmatter_value(v)),
+        compatibility: fields
+            .get("compatibility")
+            .map(|v| parse_frontmatter_value(v)),
         tags: fields.get("tags").map(|v| parse_array_value(v)),
     };
 
@@ -160,7 +164,9 @@ pub fn validate_skill_md(content: &str, directory_name: Option<&str>) -> Validat
         None => {
             return ValidationResult {
                 valid: false,
-                errors: vec!["Failed to parse SKILL.md: missing or invalid YAML frontmatter".to_string()],
+                errors: vec![
+                    "Failed to parse SKILL.md: missing or invalid YAML frontmatter".to_string(),
+                ],
                 warnings,
                 data: None,
             };
@@ -223,7 +229,10 @@ mod tests {
         let content = "---\nname: my-skill\ndescription: A test skill\nversion: 1.0.0\n---\nBody content here";
         let parsed = parse_skill_md(content).unwrap();
         assert_eq!(parsed.frontmatter.name, "my-skill");
-        assert_eq!(parsed.frontmatter.description.as_deref(), Some("A test skill"));
+        assert_eq!(
+            parsed.frontmatter.description.as_deref(),
+            Some("A test skill")
+        );
         assert_eq!(parsed.frontmatter.version.as_deref(), Some("1.0.0"));
         assert_eq!(parsed.body, "Body content here");
     }

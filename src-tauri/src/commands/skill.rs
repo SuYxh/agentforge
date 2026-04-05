@@ -1,10 +1,13 @@
-use tauri::State;
 use crate::state::AppState;
-use agentforge_core::models::skill::*;
 use agentforge_core::database::skill::SkillDB;
+use agentforge_core::models::skill::*;
+use tauri::State;
 
 #[tauri::command]
-pub async fn skill_create(state: State<'_, AppState>, dto: CreateSkillDTO) -> Result<Skill, String> {
+pub async fn skill_create(
+    state: State<'_, AppState>,
+    dto: CreateSkillDTO,
+) -> Result<Skill, String> {
     let db = state.db.lock().map_err(|e| e.to_string())?;
     SkillDB::create(&db, dto).map_err(|e| e.to_string())
 }
@@ -22,7 +25,11 @@ pub async fn skill_get_all(state: State<'_, AppState>) -> Result<Vec<Skill>, Str
 }
 
 #[tauri::command]
-pub async fn skill_update(state: State<'_, AppState>, id: String, dto: UpdateSkillDTO) -> Result<Skill, String> {
+pub async fn skill_update(
+    state: State<'_, AppState>,
+    id: String,
+    dto: UpdateSkillDTO,
+) -> Result<Skill, String> {
     let db = state.db.lock().map_err(|e| e.to_string())?;
     SkillDB::update(&db, &id, dto).map_err(|e| e.to_string())
 }
@@ -46,7 +53,10 @@ pub async fn skill_search(state: State<'_, AppState>, query: String) -> Result<V
 }
 
 #[tauri::command]
-pub async fn skill_version_get_all(state: State<'_, AppState>, skill_id: String) -> Result<Vec<SkillVersion>, String> {
+pub async fn skill_version_get_all(
+    state: State<'_, AppState>,
+    skill_id: String,
+) -> Result<Vec<SkillVersion>, String> {
     let db = state.db.lock().map_err(|e| e.to_string())?;
     SkillDB::version_get_all(&db, &skill_id).map_err(|e| e.to_string())
 }
@@ -63,19 +73,29 @@ pub async fn skill_version_create(
 }
 
 #[tauri::command]
-pub async fn skill_version_rollback(state: State<'_, AppState>, skill_id: String, version: i64) -> Result<Skill, String> {
+pub async fn skill_version_rollback(
+    state: State<'_, AppState>,
+    skill_id: String,
+    version: i64,
+) -> Result<Skill, String> {
     let db = state.db.lock().map_err(|e| e.to_string())?;
     SkillDB::version_rollback(&db, &skill_id, version).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-pub async fn skill_version_insert_direct(state: State<'_, AppState>, version: SkillVersion) -> Result<(), String> {
+pub async fn skill_version_insert_direct(
+    state: State<'_, AppState>,
+    version: SkillVersion,
+) -> Result<(), String> {
     let db = state.db.lock().map_err(|e| e.to_string())?;
     SkillDB::version_insert_direct(&db, version).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-pub async fn skill_list_local_files(state: State<'_, AppState>, skill_id: String) -> Result<Vec<SkillLocalFileTreeEntry>, String> {
+pub async fn skill_list_local_files(
+    state: State<'_, AppState>,
+    skill_id: String,
+) -> Result<Vec<SkillLocalFileTreeEntry>, String> {
     let skills_dir = &state.skills_dir;
     let skill_dir = std::path::Path::new(skills_dir).join(&skill_id);
 
@@ -84,8 +104,7 @@ pub async fn skill_list_local_files(state: State<'_, AppState>, skill_id: String
     }
 
     let mut entries = Vec::new();
-    collect_file_tree(&skill_dir, &skill_dir, &mut entries)
-        .map_err(|e| e.to_string())?;
+    collect_file_tree(&skill_dir, &skill_dir, &mut entries).map_err(|e| e.to_string())?;
     entries.sort_by(|a, b| a.path.cmp(&b.path));
     Ok(entries)
 }
@@ -148,7 +167,10 @@ pub async fn skill_read_local_file(
 }
 
 #[tauri::command]
-pub async fn skill_read_local_files(state: State<'_, AppState>, skill_id: String) -> Result<Vec<SkillLocalFileEntry>, String> {
+pub async fn skill_read_local_files(
+    state: State<'_, AppState>,
+    skill_id: String,
+) -> Result<Vec<SkillLocalFileEntry>, String> {
     let skills_dir = &state.skills_dir;
     let skill_dir = std::path::Path::new(skills_dir).join(&skill_id);
 
@@ -157,8 +179,7 @@ pub async fn skill_read_local_files(state: State<'_, AppState>, skill_id: String
     }
 
     let mut entries = Vec::new();
-    collect_file_contents(&skill_dir, &skill_dir, &mut entries)
-        .map_err(|e| e.to_string())?;
+    collect_file_contents(&skill_dir, &skill_dir, &mut entries).map_err(|e| e.to_string())?;
     Ok(entries)
 }
 
@@ -247,7 +268,10 @@ pub async fn skill_create_local_dir(
 }
 
 #[tauri::command]
-pub async fn skill_get_repo_path(state: State<'_, AppState>, skill_id: String) -> Result<Option<String>, String> {
+pub async fn skill_get_repo_path(
+    state: State<'_, AppState>,
+    skill_id: String,
+) -> Result<Option<String>, String> {
     let skills_dir = &state.skills_dir;
     let skill_dir = std::path::Path::new(skills_dir).join(&skill_id);
 

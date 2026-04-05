@@ -159,11 +159,7 @@ impl PromptDB {
         Ok(prompts)
     }
 
-    pub fn update(
-        conn: &Connection,
-        id: &str,
-        dto: UpdatePromptDTO,
-    ) -> Result<Prompt, AppError> {
+    pub fn update(conn: &Connection, id: &str, dto: UpdatePromptDTO) -> Result<Prompt, AppError> {
         let now = Utc::now().timestamp_millis();
         let mut set_clauses = vec!["updated_at = ?1".to_string()];
         let mut param_index: usize = 2;
@@ -200,9 +196,7 @@ impl PromptDB {
         add_field!(dto.description, "description");
 
         if let Some(ref pt) = dto.prompt_type {
-            let pt_str = serde_json::to_string(pt)?
-                .trim_matches('"')
-                .to_string();
+            let pt_str = serde_json::to_string(pt)?.trim_matches('"').to_string();
             set_clauses.push(format!("prompt_type = ?{}", param_index));
             param_values.push(ParamValue::Text(pt_str));
             param_index += 1;
@@ -332,7 +326,7 @@ impl PromptDB {
                     .collect();
                 conditions.push(format!("({})", tag_conditions.join(" OR ")));
                 for tag in tags {
-                    dynamic_params.push(Box::new(format!("%\"{}\"%" , tag)));
+                    dynamic_params.push(Box::new(format!("%\"{}\"%", tag)));
                 }
             }
         }
@@ -364,7 +358,9 @@ impl PromptDB {
                 limit_clause.push_str(&format!(" OFFSET ?{}", param_idx));
                 dynamic_params.push(Box::new(offset));
                 #[allow(unused_assignments)]
-                { param_idx += 1; }
+                {
+                    param_idx += 1;
+                }
             }
         }
 
@@ -443,9 +439,8 @@ impl PromptDB {
         conn: &Connection,
         prompt_id: &str,
     ) -> Result<Vec<PromptVersion>, AppError> {
-        let mut stmt = conn.prepare(
-            "SELECT * FROM prompt_versions WHERE prompt_id = ?1 ORDER BY version DESC",
-        )?;
+        let mut stmt = conn
+            .prepare("SELECT * FROM prompt_versions WHERE prompt_id = ?1 ORDER BY version DESC")?;
         let rows = stmt.query_map(params![prompt_id], row_to_prompt_version)?;
         let mut versions = Vec::new();
         for row in rows {
@@ -502,9 +497,8 @@ impl PromptDB {
         prompt_id: &str,
         version: i64,
     ) -> Result<Prompt, AppError> {
-        let mut stmt = conn.prepare(
-            "SELECT * FROM prompt_versions WHERE prompt_id = ?1 AND version = ?2",
-        )?;
+        let mut stmt =
+            conn.prepare("SELECT * FROM prompt_versions WHERE prompt_id = ?1 AND version = ?2")?;
         let ver = stmt
             .query_row(params![prompt_id, version], row_to_prompt_version)
             .map_err(|_| {

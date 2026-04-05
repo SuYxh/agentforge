@@ -3,7 +3,7 @@ pub mod folder;
 pub mod image;
 pub mod platform;
 pub mod prompt;
+pub mod security;
 pub mod settings;
 pub mod skill;
 pub mod webdav;
-pub mod security;

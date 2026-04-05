@@ -108,8 +108,7 @@ impl SecurityService {
             .as_ref()
             .ok_or_else(|| AppError::Other("Security service is locked".into()))?;
 
-        let cipher =
-            Aes256Gcm::new_from_slice(key).map_err(|e| AppError::Other(e.to_string()))?;
+        let cipher = Aes256Gcm::new_from_slice(key).map_err(|e| AppError::Other(e.to_string()))?;
 
         let mut iv = [0u8; 12];
         OsRng.fill_bytes(&mut iv);
@@ -140,8 +139,7 @@ impl SecurityService {
             .as_ref()
             .ok_or_else(|| AppError::Other("Security service is locked".into()))?;
 
-        let cipher =
-            Aes256Gcm::new_from_slice(key).map_err(|e| AppError::Other(e.to_string()))?;
+        let cipher = Aes256Gcm::new_from_slice(key).map_err(|e| AppError::Other(e.to_string()))?;
 
         let payload = BASE64
             .decode(&data[5..])

@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use base64::Engine;
+use serde::{Deserialize, Serialize};
 use tauri::State;
 
 use crate::state::AppState;
@@ -37,12 +37,10 @@ fn query_table_as_json(
                     rusqlite::types::Value::Real(f) => serde_json::Value::Number(
                         serde_json::Number::from_f64(f).unwrap_or_else(|| 0i64.into()),
                     ),
-                    rusqlite::types::Value::Text(ref s) => {
-                        serde_json::Value::String(s.clone())
-                    }
-                    rusqlite::types::Value::Blob(ref b) => {
-                        serde_json::Value::String(base64::engine::general_purpose::STANDARD.encode(b))
-                    }
+                    rusqlite::types::Value::Text(ref s) => serde_json::Value::String(s.clone()),
+                    rusqlite::types::Value::Blob(ref b) => serde_json::Value::String(
+                        base64::engine::general_purpose::STANDARD.encode(b),
+                    ),
                 };
                 map.insert(name.clone(), json_val);
             }
@@ -58,9 +56,7 @@ fn query_table_as_json(
 }
 
 #[tauri::command]
-pub async fn backup_export_data(
-    state: State<'_, AppState>,
-) -> Result<DatabaseBackup, String> {
+pub async fn backup_export_data(state: State<'_, AppState>) -> Result<DatabaseBackup, String> {
     let db = state.db.lock().map_err(|e| e.to_string())?;
 
     let prompts = query_table_as_json(&db, "SELECT * FROM prompts")?;
@@ -75,7 +71,11 @@ pub async fn backup_export_data(
         prompts,
         folders,
         versions,
-        skills: if skills.is_empty() { None } else { Some(skills) },
+        skills: if skills.is_empty() {
+            None
+        } else {
+            Some(skills)
+        },
         skill_versions: if skill_versions.is_empty() {
             None
         } else {
@@ -139,7 +139,11 @@ fn insert_json_row(
     let sql = format!(
         "INSERT OR IGNORE INTO {} ({}) VALUES ({})",
         table,
-        columns.iter().map(|c| c.as_str()).collect::<Vec<_>>().join(", "),
+        columns
+            .iter()
+            .map(|c| c.as_str())
+            .collect::<Vec<_>>()
+            .join(", "),
         placeholders.join(", ")
     );
 
