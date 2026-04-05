@@ -1,0 +1,62 @@
+# Node.js
+node_modules/
+.pnpm-store/
+package-lock.json
+
+# Build output
+dist/
+out/
+build/
+
+# Rust / Tauri
+target/
+src-tauri/gen/schemas/
+
+# IDE
+.idea/
+.vscode/
+.cursor/
+*.swp
+*.swo
+.windsurfrules
+.claude/
+.agent/
+.agents/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Test
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+*.tsbuildinfo
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary
+*.tmp
+*.temp
+
+# Homebrew cask (auto-generated)
+casks/
